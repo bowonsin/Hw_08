@@ -3,11 +3,14 @@
 
 #include "HwCharacter.h"
 #include "HwPlayerController.h"
+#include "HwGameState.h"
 #include "EnhancedInputComponent.h"
 // 카메라, 스프링 암 실제 구현이 필요한 경우라서 include
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/TextBlock.h"
 
 // Sets default values
 AHwCharacter::AHwCharacter()
@@ -37,13 +40,78 @@ AHwCharacter::AHwCharacter()
 
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
+
+    OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+    OverheadWidget->SetupAttachment(GetMesh());
+    OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+    // 초기 체력 설정
+    MaxHealth = 100.0f;
+    Health = MaxHealth;
+
 }
 
 // Called when the game starts or when spawned
 void AHwCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+    UpdateOverheadHP();
+
+}
+
+int32 AHwCharacter::GetHealth() const
+{
+    return int32();
+}
+
+void AHwCharacter::AddHealth(float Amount)
+{
+    // 체력을 회복시킴. 최대 체력을 초과하지 않도록 제한함
+    Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
+    UpdateOverheadHP();
+
+}
+
+void AHwCharacter::OnDeath()
+{
+    AHwGameState* HwGameState = GetWorld() ? GetWorld()->GetGameState<AHwGameState>() : nullptr;
+    if (HwGameState)
+    {
+        HwGameState->OnGameOver();
+    }
+
+}
+
+void AHwCharacter::UpdateOverheadHP()
+{
+    if (!OverheadWidget) return;
+
+    UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject();
+    if (!OverheadWidgetInstance) return;
+
+    if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverHeadHP"))))
+    {
+        HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
+    }
+}
+
+float AHwCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+    // 체력을 데미지만큼 감소시키고, 0 이하로 떨어지지 않도록 Clamp
+    Health = FMath::Clamp(Health - DamageAmount, 0.0f, MaxHealth);
+    UpdateOverheadHP();
+
+
+    // 체력이 0 이하가 되면 사망 처리
+    if (Health <= 0.0f)
+    {
+        OnDeath();
+    }
+
+    // 실제 적용된 데미지를 반환
+    return ActualDamage;
 }
 
 // Called to bind functionality to input

@@ -8,7 +8,14 @@ public class Hw_08 : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core"
+			, "CoreUObject"
+			, "Engine"
+			, "InputCore"
+			, "EnhancedInput"
+			,"UMG" // UMG 모듈 추가
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
