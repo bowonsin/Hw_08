@@ -15,26 +15,19 @@ ASpawnVolume::ASpawnVolume()
 
     SpawningBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawningBox"));
     SpawningBox->SetupAttachment(Scene);
-
     ItemDataTable = nullptr;
-
 }
-
 AActor* ASpawnVolume::SpawnRandomItem()
 {
     if (FItemSpawnRow* SelectedRow = GetRandomItem())
     {
         if (UClass* ActualClass = SelectedRow->ItemClass.Get())
         {
-            SpawnItem(ActualClass);
             return SpawnItem(ActualClass);
-
         }
     }
     return nullptr;
-
 }
-
 FVector ASpawnVolume::GetRandomPointInVolume() const
 {
     // 1) 박스 컴포넌트의 스케일된 Extent, 즉 x / y / z 방향으로 반지름(절반 길이)을 구함

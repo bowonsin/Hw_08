@@ -16,6 +16,7 @@ class HW_08_API AHwGameState : public AGameState
 public:
 	AHwGameState();
 
+	
 
 	virtual void BeginPlay() override;
     // 전역 점수를 저장하는 변수
@@ -27,9 +28,11 @@ public:
 	// 플레이어가 수집한 코인 개수
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin")
 	int32 CollectedCoinCount;
+
 	// 각 레벨이 유지되는 시간 (초 단위)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	float LevelDuration;
+
 	// 현재 진행 중인 레벨 인덱스
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 CurrentLevelIndex;
@@ -40,11 +43,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
 	TArray<FName> LevelMapNames;
 
-	// 매 레벨이 끝나기 전까지 시간이 흐르도록 관리하는 타이머
+	//// 매 레벨이 끝나기 전까지 시간이 흐르도록 관리하는 타이머
 	FTimerHandle LevelTimerHandle;
 	// HUD 사용시 사용되어야함
 	FTimerHandle HUDUpdateTimerHandle;
 
+	// StageTime 관리
+	TArray<float> StageTimer;
+	FTimerHandle StageTimerHandle;
+
+	// Stage 갯수 관리
+	int32 CountStage;
+	int32 MaxStage;
+
+	// Stage ActorReSpawn관리
+	FTimerHandle SpawnTimerHandle;
+	int32 CountSpawn;
+
+	TArray<AActor*> SpawnedActors;
 
     // 현재 점수를 읽는 함수
     UFUNCTION(BlueprintPure, Category = "Score")
@@ -65,6 +81,18 @@ public:
 	void OnCoinCollected();
 	// 레벨을 강제 종료하고 다음 레벨로 이동
 	void EndLevel();
+	
+	// Stage 시작
+	void StartStage();
+	// stage 끝
+	void EndStage();
+
+	// Actor 관리
+	void SpawnActor();
+	void ResetActor();
+
+	//
+	void SpawnManage();
 
 	void UpdateHUD();
 };

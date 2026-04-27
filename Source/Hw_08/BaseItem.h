@@ -47,6 +47,7 @@ protected:
 	virtual void ActivateItem(AActor* Activator) override;
 	virtual FName GetItemType() const override;
 
+public:
 	// 아이템을 제거하는 공통 함수 (추가 이펙트나 로직을 넣을 수 있음)
 	virtual void DestroyItem();
 

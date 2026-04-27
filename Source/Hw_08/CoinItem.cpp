@@ -21,12 +21,11 @@ void ACoinItem::ActivateItem(AActor* Activator)
         {
             if (AHwGameState* GameState = World->GetGameState<AHwGameState>())
             {
+                // score 추가
                 GameState->AddScore(PointValue);
 
+                // Coin 모두 줍기
                 GameState->OnCoinCollected();
-
-                UE_LOG(LogTemp, Warning, TEXT("Coin Collected! +%d"), PointValue);
-
             }
         }
         // 부모 클래스 (BaseItem)에 정의된 아이템 파괴 함수 호출

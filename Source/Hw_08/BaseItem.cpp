@@ -67,5 +67,4 @@ FName ABaseItem::GetItemType() const
 void ABaseItem::DestroyItem()
 {
 	Destroy();
-
 }
