@@ -3,6 +3,7 @@
 
 #include "HealingItem.h"
 #include "HwCharacter.h"
+#include "HwGameState.h"
 AHealingItem::AHealingItem()
 {
 	HealAmount = 20.0f;
@@ -19,8 +20,6 @@ void AHealingItem::ActivateItem(AActor* Activator)
 			// 캐릭터의 체력을 회복
 			PlayerCharacter->AddHealth(HealAmount);
 		}
-
-
         DestroyItem();
     }
 

@@ -20,7 +20,7 @@ AHwGameState::AHwGameState()
 	CurrentLevelIndex = 0;
 	MaxLevels = 3;
 
-	StageTimer.Add(5.0f);
+	StageTimer.Add(60.0f);
 	StageTimer.Add(45.0f);
 	StageTimer.Add(30.0f);
 
@@ -43,12 +43,9 @@ void AHwGameState::BeginPlay()
 		true
 	);
 }
-
-
 int32 AHwGameState::GetScore() const
 {
 	return Score;
-
 }
 void AHwGameState::AddScore(int32 Amount)
 {
@@ -59,12 +56,9 @@ void AHwGameState::AddScore(int32 Amount)
 		if (HwGameInstance)
 		{
 			HwGameInstance->AddToScore(Amount);
-			
 		}
 	}
-
 }
-
 void AHwGameState::OnGameOver()
 {
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
@@ -83,7 +77,8 @@ void AHwGameState::SpawnActor()
 	// 현재 맵에 배치된 모든 SpawnVolume을 찾아 아이템 40개를 스폰
 	TArray<AActor*> FoundVolumes;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
-	const int32 ItemToSpawn = 10;
+	const int32 ItemToSpawn = 30;
+	SpawnedCoinCount = ItemToSpawn;
 	for (int32 i = 0; i < ItemToSpawn; i++)
 	{
 		if (FoundVolumes.Num() > 0)
@@ -104,17 +99,12 @@ void AHwGameState::SpawnActor()
 		}
 	}
 }
-
 void AHwGameState::ResetActor()
 {
 	// 1. 기존 액터 제거
 	for (AActor* Actor : SpawnedActors)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Actor : %s "), *Actor->GetName() );
-
 		ABaseItem* Item = Cast<ABaseItem>(Actor);
-
-
 		if (IsValid(Item))
 		{
 			Item->DestroyItem();
@@ -125,7 +115,6 @@ void AHwGameState::ResetActor()
 	// CoinCount는 다시 0으로 초기화 
 	//SpawnedCoinCount = 0;
 }
-
 void AHwGameState::StartLevel()
 {
 	// 시작 HUD 설정
@@ -149,7 +138,6 @@ void AHwGameState::StartLevel()
 	// 레벨 시작 시, 코인 개수 초기화
 	StartStage();
 }
-
 void AHwGameState::StartStage()
 {
 	// Stage 시작하면 
@@ -173,7 +161,6 @@ void AHwGameState::StartStage()
 	// Ui Update
 	UpdateHUD();
 }
-
 void AHwGameState::EndStage()
 {
 	GetWorldTimerManager().ClearTimer(StageTimerHandle);
@@ -193,7 +180,6 @@ void AHwGameState::EndStage()
 		EndLevel();
 	}
 }
-
 void AHwGameState::OnLevelTimeUp()
 {
 	// 시간이 다 되면 레벨을 종료
@@ -202,7 +188,6 @@ void AHwGameState::OnLevelTimeUp()
 void AHwGameState::OnCoinCollected()
 {
 	CollectedCoinCount++;
-	
 	// 현재 레벨에서 스폰된 코인을 전부 주웠다면 즉시 레벨 종료
 	// 현제 스테이지에 따라서 스테이지 종료
 	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
@@ -246,11 +231,9 @@ void AHwGameState::SpawnManage()
 	{
 		// 사용하기 전에 ClearTimer 사용해서 쓰기 쉽게 만들어 놓기
 		GetWorldTimerManager().ClearTimer(SpawnTimerHandle);
-
 		// 스폰하기 전에 다시 한번더 확인하는 형식으로 호출
 		ResetActor();
 		SpawnActor(); // 스폰 
-
 		// Stage 별로 20 초 
 		GetWorldTimerManager().SetTimer(
 			SpawnTimerHandle,
@@ -263,17 +246,14 @@ void AHwGameState::SpawnManage()
 	}
 	//횟수 만큼 
 }
-
 void AHwGameState::UpdateHUD()
 {
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 	{
-		
-		AHwPlayerController* HwPlayerController = Cast<AHwPlayerController>(PlayerController);
+		if (AHwPlayerController* HwPlayerController = Cast<AHwPlayerController>(PlayerController))
 		{
 			if (UUserWidget* HUDWidget = HwPlayerController->GetHUDWidget())
 			{
-				
 				if (UTextBlock* TimeText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Time"))))
 				{
 					//float RemainingTime = GetWorldTimerManager().GetTimerRemaining(LevelTimerHandle);
@@ -289,8 +269,6 @@ void AHwGameState::UpdateHUD()
 						UHwGameInstance* HwGameInstance = Cast< UHwGameInstance>(GameInstance);
 						if (HwGameInstance)
 						{
-							
-
 							ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score: %d"), HwGameInstance->TotalScore)));
 						}
 					}

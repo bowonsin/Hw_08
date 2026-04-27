@@ -37,18 +37,37 @@ public:
 	UWidgetComponent* OverheadWidget;
 
 
-
+	
 	UFUNCTION(BlueprintPure, Category = "Health")
 	int32 GetHealth() const;
 	// 체력을 회복시키는 함수
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void AddHealth(float Amount);
 
+
+
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth;
 	// 현재 체력
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float Health;
+
+	// 이동속도 저하 얼마나
+	float DecreaseSpeed;
+
+	// 이동속도 저하 적용
+	void SetDecreaseSpeed(float Speed);
+	// 정상속도 회복
+	void ResetSpeed();
+	
+
+	// 이동 반전확인
+	float fReverseMovingControll;
+	// 이동 반전
+	void GetReverseMoving();
+	void ReSetReverseMoving();
 	
 
 	// 데미지 처리 함수 - 외부로부터 데미지를 받을 때 호출됨

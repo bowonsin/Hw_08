@@ -18,6 +18,8 @@ AHwCharacter::AHwCharacter()
     // Tick 함수는 우선 꺼둡니다.
     PrimaryActorTick.bCanEverTick = false;
 
+    // wasd 이동 반전
+    fReverseMovingControll = 1.0f;
     // (1) 스프링 암 생성
     SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     // 스프링 암을 루트 컴포넌트 (CapsuleComponent)에 부착
@@ -48,6 +50,7 @@ AHwCharacter::AHwCharacter()
     // 초기 체력 설정
     MaxHealth = 100.0f;
     Health = MaxHealth;
+    DecreaseSpeed = 1.0f;
 
 }
 
@@ -93,6 +96,26 @@ void AHwCharacter::UpdateOverheadHP()
     {
         HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
     }
+}
+
+void AHwCharacter::SetDecreaseSpeed(float Speed)
+{
+    DecreaseSpeed = Speed;
+}
+
+void AHwCharacter::ResetSpeed()
+{
+    DecreaseSpeed = 1.0f;
+}
+
+void AHwCharacter::GetReverseMoving()
+{
+    fReverseMovingControll = -1.0f;
+}
+
+void AHwCharacter::ReSetReverseMoving()
+{
+    fReverseMovingControll = 1.0f;
 }
 
 float AHwCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -200,13 +223,13 @@ void AHwCharacter::Move(const FInputActionValue& value)
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
         // 캐릭터가 바라보는 방향(정면)으로 X축 이동
-        AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        AddMovementInput(GetActorForwardVector(), MoveInput.X * DecreaseSpeed * fReverseMovingControll);
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
     {
         // 캐릭터의 오른쪽 방향으로 Y축 이동
-        AddMovementInput(GetActorRightVector(), MoveInput.Y);
+        AddMovementInput(GetActorRightVector(), MoveInput.Y * DecreaseSpeed * fReverseMovingControll);
     }
 }
 

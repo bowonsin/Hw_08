@@ -91,8 +91,9 @@ public:
 	void SpawnActor();
 	void ResetActor();
 
-	//
+	//  스폰 아이템 관리
 	void SpawnManage();
 
+	//HUD 관리
 	void UpdateHUD();
 };
