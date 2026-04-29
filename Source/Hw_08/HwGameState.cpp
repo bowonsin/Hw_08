@@ -6,13 +6,16 @@
 #include "HwPlayerController.h"
 #include "SpawnVolume.h"
 #include "CoinItem.h"
+#include "BoomTrigger.h"
 #include "Kismet//GameplayStatics.h"
 #include "Components/TextBlock.h"
 #include "Blueprint//UserWidget.h"
 
+
 AHwGameState::AHwGameState()
 {
-	
+	PrimaryActorTick.bCanEverTick = true;
+
 	Score = 0;
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
@@ -20,13 +23,33 @@ AHwGameState::AHwGameState()
 	CurrentLevelIndex = 0;
 	MaxLevels = 3;
 
-	StageTimer.Add(60.0f);
-	StageTimer.Add(45.0f);
+	StageTimer.Add(5.0f);
+	StageTimer.Add(5.0f);
 	StageTimer.Add(30.0f);
+
+	TrapLocationArr.Add(FVector(0, 0, 50));
+	TrapLocationArr.Add(FVector(1500, 1500, 50));
+	TrapLocationArr.Add(FVector(-1500, 1500, 50));
+	TrapLocationArr.Add(FVector(1500, -1500, 50));
+	TrapLocationArr.Add(FVector(-1500, -1500, 50));
 
 	CountStage = 0;
 	MaxStage = 3;
 	CountSpawn = 0;
+
+	TimeCheck = 0.5f;
+	Time_Count = 0;
+}
+
+void AHwGameState::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	Time_Count += DeltaTime;
+	if (CountStage == 2 && Time_Count >= TimeCheck)
+	{
+		SpawnBoom();
+		Time_Count = 0;
+	}
 }
 
 void AHwGameState::BeginPlay()
@@ -135,65 +158,10 @@ void AHwGameState::StartLevel()
 			CurrentLevelIndex = HwGameInstance->CurrentLevelIndex; // 🔥 추가
 		}
 	}
+	//트랩 초기화
+	DestoryTrap();
 	// 레벨 시작 시, 코인 개수 초기화
 	StartStage();
-}
-void AHwGameState::StartStage()
-{
-	// Stage 시작하면 
-	SpawnedCoinCount = 0;
-	CollectedCoinCount = 0;
-	CountSpawn = CountStage - MaxStage;
-	
-	// Actor 스폰 
-	SpawnManage();
-
-	// StageTimerHandle로 사용하고 
-	// 시간이 끝나면 EndStage 함수 호출
-	// 시간은 TArray 에 저장된 값들 기준으로 
-	GetWorldTimerManager().SetTimer(
-		StageTimerHandle,
-		this,
-		&AHwGameState::EndStage,
-		StageTimer[CountStage],
-		false
-	);
-	// Ui Update
-	UpdateHUD();
-}
-void AHwGameState::EndStage()
-{
-	GetWorldTimerManager().ClearTimer(StageTimerHandle);
-
-	// 일단 Stage 에 있는 Actor들을 제거 
-	ResetActor();
-	CountStage++;
-	// 현제 스테이
-	if (CountStage < MaxStage)
-	{
-		// 최대 Stage를 채우지 못했다면 다시 StartStage로 
-		StartStage();
-	}
-	else
-	{
-		CountStage = 0;
-		EndLevel();
-	}
-}
-void AHwGameState::OnLevelTimeUp()
-{
-	// 시간이 다 되면 레벨을 종료
-	EndLevel();
-}
-void AHwGameState::OnCoinCollected()
-{
-	CollectedCoinCount++;
-	// 현재 레벨에서 스폰된 코인을 전부 주웠다면 즉시 레벨 종료
-	// 현제 스테이지에 따라서 스테이지 종료
-	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
-	{
-		EndStage();
-	}
 }
 void AHwGameState::EndLevel()
 {
@@ -225,6 +193,68 @@ void AHwGameState::EndLevel()
 		}
 	}
 }
+
+void AHwGameState::StartStage()
+{
+	// Stage 시작하면 
+	SpawnedCoinCount = 0;
+	CollectedCoinCount = 0;
+	CountSpawn = CountStage - MaxStage;
+	
+	// Actor 스폰 
+	SpawnManage();
+
+	// StageTimerHandle로 사용하고 
+	// 시간이 끝나면 EndStage 함수 호출
+	// 시간은 TArray 에 저장된 값들 기준으로 
+	GetWorldTimerManager().SetTimer(
+		StageTimerHandle,
+		this,
+		&AHwGameState::EndStage,
+		StageTimer[CountStage],
+		false
+	);
+	// Ui Update
+	UpdateHUD();
+}
+void AHwGameState::EndStage()
+{
+	GetWorldTimerManager().ClearTimer(StageTimerHandle);
+	// 2번째 스테이지 이후에 Trap 생성
+	
+	// 일단 Stage 에 있는 Actor들을 제거 
+	ResetActor();
+	CountStage++;
+
+	if (CountStage == 1)
+		SpawnTrap();
+	// 현제 스테이
+	if (CountStage < MaxStage)
+	{
+		// 최대 Stage를 채우지 못했다면 다시 StartStage로 
+		StartStage();
+	}
+	else
+	{
+		CountStage = 0;
+		EndLevel();
+	}
+}
+void AHwGameState::OnLevelTimeUp()
+{
+	// 시간이 다 되면 레벨을 종료
+	EndLevel();
+}
+void AHwGameState::OnCoinCollected()
+{
+	CollectedCoinCount++;
+	// 현재 레벨에서 스폰된 코인을 전부 주웠다면 즉시 레벨 종료
+	// 현제 스테이지에 따라서 스테이지 종료
+	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
+	{
+		EndStage();
+	}
+}
 void AHwGameState::SpawnManage()
 {
 	if (CountSpawn != 0)
@@ -246,6 +276,39 @@ void AHwGameState::SpawnManage()
 	}
 	//횟수 만큼 
 }
+
+void AHwGameState::SpawnTrap()
+{
+	TArray<AActor*> FoundVolumes;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
+	for (int32 i = 0; i < TrapLocationArr.Num(); i++)
+	{
+		if (FoundVolumes.Num() > 0)
+		{
+			ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(FoundVolumes[0]);
+			if (SpawnVolume)
+			{
+				AActor* SpawnedActor = SpawnVolume->SpawnPushingItem(TrapLocationArr[i]);
+				TrapActorArr.Add(SpawnedActor);
+			}
+		}
+	}
+}
+
+void AHwGameState::DestoryTrap()
+{
+	for (AActor * Actor : TrapActorArr)
+	{
+		ABaseItem* Item = Cast<ABaseItem>(Actor);
+		if (IsValid(Item))
+		{
+			Item->DestroyItem();
+		}
+	}
+	// TArray<AActor> 비우고 
+	TrapActorArr.Empty();
+}
+
 void AHwGameState::UpdateHUD()
 {
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
@@ -277,6 +340,36 @@ void AHwGameState::UpdateHUD()
 				if (UTextBlock* LevelIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Level"))))
 				{
 					LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d / Stage : % d"), CurrentLevelIndex + 1 , CountStage + 1)));
+				}
+			}
+		}
+	}
+}
+
+void AHwGameState::SpawnBoom()
+{
+	TArray<AActor*> FoundVolumes;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
+	if (FoundVolumes.Num() > 0)
+	{
+		ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(FoundVolumes[0]);
+		if (SpawnVolume)
+		{
+			// 1. BoomTrigger 가져오기
+			TArray<AActor*> FoundTriggers;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoomTrigger::StaticClass(), FoundTriggers);
+
+			if (FoundTriggers.Num() > 0)
+			{
+				ABoomTrigger* Trigger = Cast<ABoomTrigger>(FoundTriggers[0]);
+
+				if (Trigger)
+				{
+					// 2. 랜덤 위치 가져오기
+					FVector SpawnPos = Trigger->GetRandomPotoint();
+
+					// 3. SpawnVolume에 전달
+					AActor* SpawnedActor = SpawnVolume->BoomItem(SpawnPos);
 				}
 			}
 		}

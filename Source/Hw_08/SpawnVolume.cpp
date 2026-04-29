@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "PushingItem01.h"
 // Sets default values
 ASpawnVolume::ASpawnVolume()
 {
@@ -31,7 +32,8 @@ AActor* ASpawnVolume::SpawnRandomItem()
 FVector ASpawnVolume::GetRandomPointInVolume() const
 {
     // 1) 박스 컴포넌트의 스케일된 Extent, 즉 x / y / z 방향으로 반지름(절반 길이)을 구함
-        FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
+    FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
+
     // 2) 박스 중심 위치
     FVector BoxOrigin = SpawningBox->GetComponentLocation();
 
@@ -42,7 +44,6 @@ FVector ASpawnVolume::GetRandomPointInVolume() const
         FMath::FRandRange(-BoxExtent.Z, BoxExtent.Z)
     );
 }
-
 FItemSpawnRow* ASpawnVolume::GetRandomItem() const
 {
     if (!ItemDataTable) return nullptr;
@@ -77,10 +78,8 @@ FItemSpawnRow* ASpawnVolume::GetRandomItem() const
             return Row;
         }
     }
-
     return nullptr;
 }
-
 AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
 {
     if (!ItemClass) return nullptr;
@@ -91,7 +90,29 @@ AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
         GetRandomPointInVolume(),
         FRotator::ZeroRotator
     );
-
     return SpawnedActor;
-
 }
+
+AActor* ASpawnVolume::SpawnPushingItem(FVector Location)
+{
+    if (!PushingItemClass) return nullptr;
+
+    AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
+        PushingItemClass,
+        Location,
+        FRotator::ZeroRotator
+    );
+    return SpawnedActor;
+}
+AActor* ASpawnVolume::BoomItem(FVector Location)
+{
+    if (!PushingItemClass) return nullptr;
+
+    AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
+        BoomItemClass,
+        Location,
+        FRotator::ZeroRotator
+    );
+    return SpawnedActor;
+}
+

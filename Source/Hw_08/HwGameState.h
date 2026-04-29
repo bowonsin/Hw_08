@@ -16,7 +16,7 @@ class HW_08_API AHwGameState : public AGameState
 public:
 	AHwGameState();
 
-	
+	virtual void Tick(float DeltaTime)override;
 
 	virtual void BeginPlay() override;
     // 전역 점수를 저장하는 변수
@@ -60,7 +60,14 @@ public:
 	FTimerHandle SpawnTimerHandle;
 	int32 CountSpawn;
 
+	// 생성된 엑터 관리
 	TArray<AActor*> SpawnedActors;
+
+	// Trap Actor 관리
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trap")
+	TArray<AActor* > TrapArray;
+
 
     // 현재 점수를 읽는 함수
     UFUNCTION(BlueprintPure, Category = "Score")
@@ -94,6 +101,22 @@ public:
 	//  스폰 아이템 관리
 	void SpawnManage();
 
+	void SpawnTrap();
+
+	void DestoryTrap();
+
+
 	//HUD 관리
 	void UpdateHUD();
+
+	TArray<FVector> TrapLocationArr;
+	TArray<AActor*> TrapActorArr;
+
+
+	void SpawnBoom();
+
+	float TimeCheck;
+	float Time_Count;
+	
+
 };

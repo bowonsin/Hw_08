@@ -45,6 +45,12 @@ void ABaseItem::OnItemOverlap(
         // 아이템 사용 (획득) 로직 호출
         ActivateItem(OtherActor);
     }
+
+    if (OtherComp && OtherComp->ComponentHasTag("GroundTrigger"))
+    {
+        ActivateItem(OtherActor);
+        return;
+    }
 }
 
 void ABaseItem::OnItemEndOverlap(

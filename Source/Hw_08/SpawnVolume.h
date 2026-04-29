@@ -19,6 +19,14 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Spawning")
     AActor* SpawnRandomItem();
+
+
+    // 스폰 함수
+    UFUNCTION(BlueprintCallable, Category = "Spawn")
+    AActor* SpawnPushingItem(FVector Location);
+
+    UFUNCTION(BlueprintCallable, Category = "Spawn")
+    AActor* BoomItem(FVector Location);
 protected:
 
 
@@ -40,7 +48,13 @@ protected:
     // 특정 아이템 클래스를 스폰하는 함수
     UFUNCTION(BlueprintCallable, Category = "Spawning")
     AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
+    // 스폰할 클래스 (블루프린트에서 설정 가능)
 
 
+    UPROPERTY(EditAnywhere, Category = "Spawn")
+    TSubclassOf<AActor> PushingItemClass;
+
+    UPROPERTY(EditAnywhere, Category = "Spawn")
+    TSubclassOf<AActor> BoomItemClass;
 
 };

@@ -66,14 +66,13 @@ void AHwPlayerController::BeginPlay()
 		}
 	}
 	*/
-	
-
 	AHwGameState* HwGameState = GetWorld() ? GetWorld()->GetGameState<AHwGameState>() : nullptr;
 	if (HwGameState)
 	{
 		HwGameState->UpdateHUD();
 	}
 }
+
 UUserWidget* AHwPlayerController::GetHUDWidget() const
 {
 	return HUDWidgetInstance;
@@ -153,6 +152,7 @@ void AHwPlayerController::ShowMainMenu(bool bIsRestart)
 				ButtonText->SetText(FText::FromString(TEXT("Start")));
 			}
 		}
+
 		if (bIsRestart)
 		{
 			UFunction* PlayAnimFunc = MainMenuWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
