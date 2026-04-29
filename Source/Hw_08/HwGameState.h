@@ -105,13 +105,11 @@ public:
 
 	void DestoryTrap();
 
-
 	//HUD 관리
 	void UpdateHUD();
 
 	TArray<FVector> TrapLocationArr;
 	TArray<AActor*> TrapActorArr;
-
 
 	void SpawnBoom();
 

@@ -13,14 +13,15 @@
 AHwPlayerController::AHwPlayerController()
 	:
 	InputMappingContext(nullptr)
-	,MoveAction(nullptr)
-	,JumpAction(nullptr)
-	,LookAction(nullptr)
-	,SprintAction(nullptr)
-	,HUDWidgetClass(nullptr)
-	,HUDWidgetInstance(nullptr)
-	,MainMenuWidgetClass(nullptr)
-	,MainMenuWidgetInstance(nullptr)
+	, MoveAction(nullptr)
+	, JumpAction(nullptr)
+	, LookAction(nullptr)
+	, SprintAction(nullptr)
+	, HUDWidgetClass(nullptr)
+	, HUDWidgetInstance(nullptr)
+	, MainMenuWidgetClass(nullptr)
+	, MainMenuWidgetInstance(nullptr)
+	
 {
 }
 
@@ -66,6 +67,7 @@ void AHwPlayerController::BeginPlay()
 		}
 	}
 	*/
+
 	AHwGameState* HwGameState = GetWorld() ? GetWorld()->GetGameState<AHwGameState>() : nullptr;
 	if (HwGameState)
 	{
@@ -141,6 +143,7 @@ void AHwPlayerController::ShowMainMenu(bool bIsRestart)
 			SetInputMode(FInputModeUIOnly());
 		}
 
+		/*
 		if (UTextBlock* ButtonText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName(TEXT("StartButtonText"))))
 		{
 			if (bIsRestart)
@@ -152,28 +155,61 @@ void AHwPlayerController::ShowMainMenu(bool bIsRestart)
 				ButtonText->SetText(FText::FromString(TEXT("Start")));
 			}
 		}
+		*/
 
-		if (bIsRestart)
+		
+	}
+}
+
+void AHwPlayerController::ShowOverMenu(bool bIsRestart)
+{
+	// HUD가 켜져 있다면 닫기
+	if (HUDWidgetInstance)
+	{
+		HUDWidgetInstance->RemoveFromParent();
+		HUDWidgetInstance = nullptr;
+	}
+
+	// 이미 메뉴가 떠 있으면 제거
+	if (OverMunuWidgetInstance)
+	{
+		OverMunuWidgetInstance->RemoveFromParent();
+		OverMunuWidgetInstance = nullptr;
+	}
+	if (OverMunuWidgetClass)
+	{
+		OverMunuWidgetInstance = CreateWidget<UUserWidget>(this, OverMunuWidgetClass);
+		if (OverMunuWidgetInstance)
 		{
-			UFunction* PlayAnimFunc = MainMenuWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
-			if (PlayAnimFunc)
-			{
-				MainMenuWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
-			}
+			OverMunuWidgetInstance->AddToViewport();
 
-			if (UTextBlock* TotalScoreText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName("TotalScoreText")))
+			bShowMouseCursor = true;
+			SetInputMode(FInputModeUIOnly());
+		}
+
+	}
+
+	if (bIsRestart)
+	{
+		UFunction* PlayAnimFunc = OverMunuWidgetInstance->FindFunction(FName("PlayGameOverAnim"));
+		if (PlayAnimFunc)
+		{
+			OverMunuWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
+		}
+
+		if (UTextBlock* TotalScoreText = Cast<UTextBlock>(OverMunuWidgetInstance->GetWidgetFromName("TotalScoreText")))
+		{
+			if (UHwGameInstance* SpartaGameInstance = Cast<UHwGameInstance>(UGameplayStatics::GetGameInstance(this)))
 			{
-				if (UHwGameInstance* SpartaGameInstance = Cast<UHwGameInstance>(UGameplayStatics::GetGameInstance(this)))
-				{
-					TotalScoreText->SetText(FText::FromString(
-						FString::Printf(TEXT("Total Score: %d"), SpartaGameInstance->TotalScore)
-					));
-				}
+				TotalScoreText->SetText(FText::FromString(
+					FString::Printf(TEXT("Total Score: %d"), SpartaGameInstance->TotalScore)
+				));
 			}
 		}
 	}
 }
 
+// 블루 프린트를 사용하여 직접적으로 호출하여 시작한다.
 void AHwPlayerController::StartGame()
 {
 	if (UHwGameInstance* HwGameInstance = Cast<UHwGameInstance>(UGameplayStatics::GetGameInstance(this)))

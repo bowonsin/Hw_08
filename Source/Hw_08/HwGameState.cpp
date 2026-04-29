@@ -89,7 +89,8 @@ void AHwGameState::OnGameOver()
 		if (AHwPlayerController* HwPlayerController = Cast<AHwPlayerController>(PlayerController))
 		{
 			HwPlayerController->SetPause(true);
-			HwPlayerController->ShowMainMenu(true);
+			HwPlayerController->ShowOverMenu(true);
+			//HwPlayerController->ShowMainMenu(true);
 		}
 	}
 	// 여기서 UI를 띄운다거나, 재시작 기능을 넣을 수도 있음
@@ -193,7 +194,6 @@ void AHwGameState::EndLevel()
 		}
 	}
 }
-
 void AHwGameState::StartStage()
 {
 	// Stage 시작하면 
@@ -228,6 +228,7 @@ void AHwGameState::EndStage()
 
 	if (CountStage == 1)
 		SpawnTrap();
+
 	// 현제 스테이
 	if (CountStage < MaxStage)
 	{

@@ -30,12 +30,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* SprintAction;
 
-
 	// 메뉴 UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu")
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Menu")
 	UUserWidget* MainMenuWidgetInstance;
+
+	// 메뉴 UI
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Menu")
+	TSubclassOf<UUserWidget> OverMunuWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Menu")
+	UUserWidget* OverMunuWidgetInstance;
 
 
 	// UMG 위젯 클래스를 에디터에서 할당받을 변수
@@ -56,6 +61,9 @@ public:
 	// 게임 시작
 	UFUNCTION(BlueprintCallable, Category = "Menu")
 	void StartGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Menu")
+	void ShowOverMenu(bool bIsRestart);
 
 
 	virtual void BeginPlay() override;
